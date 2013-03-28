@@ -7,7 +7,9 @@ Changelog
 
 1.1-dev (unreleased)
 --------------------
-* Fix cache key for non-folderish objects
+* Feature: Support JSONP calls
+  [avoinea]
+* Bug fix: Fix cache key for non-folderish objects
   [avoinea]
 
 1.0 (2013-02-13)

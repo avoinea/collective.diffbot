@@ -51,6 +51,8 @@ class Diffbot(BrowserView):
         token = self.settings.token
 
         query = urlencode(dict(token=token, url=url))
+
+        self.request.response.setHeader('content-type', 'application/json')
         try:
             # XXX
             #request = urllib2.Request(diffbot, query, headers=self.headers)
@@ -59,6 +61,10 @@ class Diffbot(BrowserView):
             logger.exception(err)
             return simplejson.dumps(res)
         else:
-            return conn.read()
+            callback = self.request.get('callback', None)
+            if not callback:
+                return conn.read()
+            # JSONP
+            return callback + u'(' + conn.read() + u')'
         finally:
             conn.close()
