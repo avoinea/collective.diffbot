@@ -64,7 +64,15 @@ class Diffbot(BrowserView):
             callback = self.request.get('callback', None)
             if not callback:
                 return conn.read()
+
             # JSONP
-            return callback + u'(' + conn.read() + u')'
+            if isinstance(callback, str):
+                callback = callback.decode('utf-8')
+
+            text = conn.read()
+            if isinstance(text, str):
+                text = text.decode('utf-8')
+
+            return callback + u'(' + text + u')'
         finally:
             conn.close()
