@@ -6,5 +6,5 @@ def cacheJsonKey(method, self, *args, **kwargs):
     return (
         self.context.absolute_url(1),
         getattr(self, '__name__', ''),
-        self.request.form
+        self.request.form.get('url', '')
     )
