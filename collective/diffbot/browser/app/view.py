@@ -40,11 +40,11 @@ class Diffbot(BrowserView):
     def _json(self, **kwargs):
         """ Get JSON from diffbot
         """
-        res = {}
+        res = simplejson.dumps({})
         url = self.request.form.get('url', None)
         if not url:
             logger.warn("Invalid url provided %s", url)
-            return simplejson.dumps(res)
+            return res
 
         diffbot = self.settings.url
         token = self.settings.token
@@ -55,12 +55,11 @@ class Diffbot(BrowserView):
             conn = urllib2.urlopen(diffbot + "?" + query)
         except Exception, err:
             logger.exception(err)
-            json = simplejson.dumps(res)
         else:
-            json = conn.read()
+            res = conn.read()
         finally:
             conn.close()
-        return json
+        return res
 
     def json(self, **kwargs):
         """ Get JSON from diffbot
