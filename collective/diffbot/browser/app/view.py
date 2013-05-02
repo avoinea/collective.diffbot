@@ -2,7 +2,6 @@
 """
 import logging
 import urllib2
-from urllib import quote
 from urllib import urlencode
 from zope.component import queryUtility
 import json as simplejson
@@ -38,7 +37,7 @@ class Diffbot(BrowserView):
         return self._settings
 
     @ramcache(cacheJsonKey, dependencies=['collective.diffbot'])
-    def json(self, **kwargs):
+    def _json(self, **kwargs):
         """ Get JSON from diffbot
         """
         res = {}
@@ -51,28 +50,30 @@ class Diffbot(BrowserView):
         token = self.settings.token
 
         query = urlencode(dict(token=token, url=url))
-
-        self.request.response.setHeader('content-type', 'application/json')
         try:
-            # XXX
             #request = urllib2.Request(diffbot, query, headers=self.headers)
             conn = urllib2.urlopen(diffbot + "?" + query)
         except Exception, err:
             logger.exception(err)
-            return simplejson.dumps(res)
+            json = simplejson.dumps(res)
         else:
-            callback = self.request.get('callback', None)
-            if not callback:
-                return conn.read()
-
-            # JSONP
-            if isinstance(callback, str):
-                callback = callback.decode('utf-8')
-
-            text = conn.read()
-            if isinstance(text, str):
-                text = text.decode('utf-8')
-
-            return callback + u'(' + text + u')'
+            json = conn.read()
         finally:
             conn.close()
+        return json
+
+    def json(self, **kwargs):
+        """ Get JSON from diffbot
+        """
+        self.request.response.setHeader('content-type', 'application/json')
+        json = self._json(**kwargs)
+        callback = self.request.get('callback', None)
+        if not callback:
+            return json
+
+        # JSONP
+        if isinstance(callback, str):
+            callback = callback.decode('utf-8')
+        if isinstance(json, str):
+            json = json.decode('utf-8')
+        return callback + u'(' + json + u')'
